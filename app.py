@@ -5,6 +5,7 @@ import json
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
+import tornado.options
 import motor.motor_tornado
 from matplotlib.backends.backend_webagg_core import \
         FigureManagerWebAgg, \
@@ -138,4 +139,5 @@ class Application(tornado.web.Application):
 if __name__ == '__main__':
     app = Application()
     app.listen(8888)
+    tornado.options.parse_command_line()
     tornado.ioloop.IOLoop.current().start()
