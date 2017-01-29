@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block body %}
+    <form enctype=multipart/form-data
+        action="/" method=post>
+        <p><input type=file name=file><input type=submit value=Upload></p>
+    </form>
+    <h2>All Spectra</h2>
+    <ul>
+        {% for spectrum in spectra %}
+        <li>
+            <a href='/spectra/{{ spectrum['_id'] }}'>{{ spectrum['name'] }}</a>
+        </li>
+        {% end %}
+    </ul>
+{% end %}
