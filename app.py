@@ -125,6 +125,7 @@ class Application(tornado.web.Application):
                 ]
         setting = dict(
                 template_path=os.path.join(os.path.dirname(__file__), 'templates'),
+                static_path=os.path.join(os.path.dirname(__file__), 'static'),
                 debug=True,
                 login_url='/login',
                 cookie_secret=str(uuid.uuid4()),
