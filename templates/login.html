@@ -4,7 +4,7 @@
     {% if error %}
     <p><strong>error:</strong> {{ error }}
     {% end %}
-    <form action="/login" method=post>
+    <form action="{{ reverse_url('login') }}" method=post>
         {% module xsrf_form_html() %}
         <dl>
             <dt>username:</dt>

@@ -7,12 +7,12 @@
     </head>
     <body>
         <header>
-            <h1><a href="/">Spectral View</a></h1>
+            <h1><a href="{{ reverse_url('index') }}">Spectral View</a></h1>
             <nav>
                 {% if not current_user %}
-                <a href="/login">login</a>
+                <a href="{{ reverse_url('login') }}">login</a>
                 {% else %}
-                <a href="/logout">logout</a>
+                <a href="{{ reverse_url('logout') }}">logout</a>
                 {% end %}
             </nav>
         </header>

@@ -1,15 +1,19 @@
 {% extends "base.html" %}
 {% block body %}
+    {% if current_user %}
     <form enctype=multipart/form-data
-        action="/" method=post>
+        action="{{ reverse_url('index') }}" method=post>
         {% module xsrf_form_html() %}
         <p><input type=file name=file><input type=submit value=Upload></p>
     </form>
+    {% end %}
     <h2>All Spectra</h2>
     <ul>
         {% for spectrum in spectra %}
         <li>
-            <a href='/spectra/{{ spectrum['_id'] }}'>{{ spectrum['name'] }}</a>
+            <a href='{{ reverse_url('spectrum', spectrum['_id']) }}'>
+                {{ spectrum['name'] }}
+            </a>
         </li>
         {% end %}
     </ul>

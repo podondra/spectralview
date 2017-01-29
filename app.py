@@ -88,7 +88,7 @@ class SpectraHandler(BaseHandler):
     async def post(self):
         data = parse_fits(io.BytesIO(self.request.files['file'][0]['body']))
         await self.db.spectra.insert_one(data)
-        self.redirect('/')
+        self.redirect(self.reverse_url('index'))
 
 
 class LoginHandler(BaseHandler):
@@ -103,7 +103,7 @@ class LoginHandler(BaseHandler):
             return
         if self.get_argument('password') == user['password']:
             self.set_secure_cookie('user', username)
-            self.redirect('/')
+            self.redirect(self.reverse_url('index'))
         else:
             self.render('login.html', error='incorrect password')
 
@@ -111,17 +111,18 @@ class LoginHandler(BaseHandler):
 class LogoutHandler(BaseHandler):
     def get(self):
         self.clear_cookie('user')
-        self.redirect('/')
+        self.redirect(self.reverse_url('index'))
+
 
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
-                (r'/', SpectraHandler),
-                (r'/spectra/([0-9a-z]+)', FigureHandler),
-                (r'/mpl.js', MplJsHandler),
-                (r'/([0-9]+)/ws', WebSocketHandler),
-                (r'/login', LoginHandler),
-                (r'/logout', LogoutHandler),
+                tornado.web.URLSpec(r'/', SpectraHandler, name='index'),
+                tornado.web.URLSpec(r'/spectra/([0-9a-z]+)', FigureHandler, name='spectrum'),
+                tornado.web.URLSpec(r'/mpl.js', MplJsHandler, name='mpl'),
+                tornado.web.URLSpec(r'/([0-9]+)/ws', WebSocketHandler, name='ws'),
+                tornado.web.URLSpec(r'/login', LoginHandler, name='login'),
+                tornado.web.URLSpec(r'/logout', LogoutHandler, name='logout'),
                 ]
         setting = dict(
                 template_path=os.path.join(os.path.dirname(__file__), 'templates'),
