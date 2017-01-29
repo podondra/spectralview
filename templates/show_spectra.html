@@ -2,6 +2,7 @@
 {% block body %}
     <form enctype=multipart/form-data
         action="/" method=post>
+        {% module xsrf_form_html() %}
         <p><input type=file name=file><input type=submit value=Upload></p>
     </form>
     <h2>All Spectra</h2>

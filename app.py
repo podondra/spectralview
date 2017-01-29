@@ -127,6 +127,7 @@ class Application(tornado.web.Application):
                 debug=True,
                 login_url='/login',
                 cookie_secret=str(uuid.uuid4()),
+                xsrf_cookies=True,
                 )
         super(Application, self).__init__(handlers, **setting)
 
