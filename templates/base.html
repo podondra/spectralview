@@ -7,6 +7,13 @@
     <body>
         <header>
             <h1><a href="/">Spectral View</a></h1>
+            <nav>
+                {% if not current_user %}
+                <a href="/login">login</a>
+                {% else %}
+                <a href="/logout">logout</a>
+                {% end %}
+            </nav>
         </header>
         <section>
             {% block body %}{% end %}

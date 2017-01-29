@@ -1,0 +1,16 @@
+{% extends base.html %}
+{% block body %}
+    <h2>login</h2>
+    {% if error %}
+    <p><strong>error:</strong> {{ error }}
+    {% end %}
+    <form action="/login" method=post>
+        <dl>
+            <dt>username:</dt>
+            <dd><input type=text name=username></dd>
+            <dt>password:</dt>
+            <dd><input type=password name=password></dd>
+            <dd><input type=submit name=login></dd>
+        </dl>
+    </form>
+{% end %}
