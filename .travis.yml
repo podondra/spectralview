@@ -1,16 +1,22 @@
 language: python
 python:
-    - "3.5"
-    - "3.6"
-    - "nightly"
-# https://docs.travis-ci.com/user/database-setup/#MongoDB
+    - '3.5'
+    - '3.6'
+    - nightly
 services: mongodb
 env: DB_IP=127.0.0.1
-# there are no tests yet so only test if installation succeed
 install:
     - pip install coveralls pytest-cov
     - pip install -e .
-# wait for mongodb
 before_script: sleep 15
 script: pytest tests --cov
 after_success: coveralls
+deploy:
+    provider: pypi
+    user: podondra
+    password:
+        secure: ao8wOrqF+I6VnzNqW3lAmtrasWxKJpVCJRD1yEeXoIB8dagRJkdwaPJWA6HdE918t3cU0M67UsoWGO4qSfgwJUPdOjb3EUDcLzjF72aAPSTpkzVBCoOiKHUV7o4p52OouIdKv+nt0utWrRHKSxrHC2vcUtcqcPlsIyq36g9opY8PxmMRSU7dYk4BumiEX7aGvgQlGE3xQ07tFeeVb8vIydmyb25Tqfh/tF8THVSyWxtbesyOt1I2uRshvHEeXOTvZxNrzIAmfZ95ymHfYUxEKEbBXkM5p7Sna4apnlXi1mMLr9ndfphOw61TiYY2JFw9hHtGABh1MsH9G+g+IhYo+l9TC0WFAiTdppPkpDfBQ6SltMTRYTVLMS5FuRs5L14+FXQu873OXs0qAB6DjayJRqEhffxViGkoHm1qRTnTlZQ775PUqI4ugh8jvAIJBe+bFw/wFwldC6C5c609yq6c/RPCpK5Nt7fxdsPMXeyU8QlhWBj83+EOSWsIVfEM0uahWbcPv+hByrwuMomHbPOvHiBJXUZsgifHzQWIe/1pE0AnX7ZS8NLNRdwlteRFVNzlT60qffR4TEZev6BTW0J/LS1+pKO/kXZM2BIgMG8kDK/V2iDK0GnGziLhBwr//e1vIyKGJ8xxX6ekzejj3UnzSgWUs0Wy1DSyUkwHzumSC9M=
+    on:
+        tags: true
+        distributions: sdist bdist_wheel
+        branch: master
