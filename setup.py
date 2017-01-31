@@ -9,7 +9,7 @@ with open(path.join(root, 'README.rst')) as f:
 
 setup(
     name='spectralview',
-    version='0.0.0',
+    version='0.0.1',
     description='Web application for star spectra viewing.',
     long_description=long_description,
     url='https://spectralview.readthedocs.io/',
