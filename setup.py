@@ -12,6 +12,7 @@ setup(
     version='0.0.0',
     description='Web application for star spectra viewing.',
     long_description=long_description,
+    url='https://spectralview.readthedocs.io/',
     author='Ondřej Podsztavek',
     author_email='ondrej.podsztavek@gmail.com',
     license='GPLv3',
@@ -31,6 +32,9 @@ setup(
         ],
     extras_require={
         'dev': ['sphinx', 'twine'],
+        },
+    package_data={
+        'spectralview': ['static/*', 'templates/*.html']
         },
     entry_points={
         'console_scripts': ['spectralview=spectralview:main'],
