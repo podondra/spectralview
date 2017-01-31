@@ -29,9 +29,10 @@ setup(
         'motor>=1.1',
         'matplotlib>=2.0',
         'astropy>=1.3',
+        'pytest>=3.0',
         ],
     extras_require={
-        'dev': ['sphinx', 'twine'],
+        'dev': ['sphinx', 'twine', 'pytest'],
         },
     package_data={
         'spectralview': ['static/*', 'templates/*.html']

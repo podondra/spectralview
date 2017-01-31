@@ -3,5 +3,8 @@ python:
     - "3.5"
     - "3.6"
     - "nightly"
+# https://docs.travis-ci.com/user/database-setup/#MongoDB
+services: mongodb
 # there are no tests yet so only test if installation succeed
-script: pip install -e .
+install: pip install -e .
+script: pytest tests
