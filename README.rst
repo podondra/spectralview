@@ -13,7 +13,6 @@ Spectral View
     :target: https://coveralls.io/github/podondra/spectralview?branch=master
     :alt: Coverage Status
 
-
 Web application for interactive spectra viewing.
 
 `Documentation <http://spectralview.readthedocs.io/>`_ is available on

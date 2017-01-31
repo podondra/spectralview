@@ -18,6 +18,7 @@ built using `Tornado <http://www.tornadoweb.org/>`_ web framework on top of
     :maxdepth: 2
     :caption: Contents:
 
+    getting_started.rst
     for_developers.rst
 
 Indices and tables
