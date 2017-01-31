@@ -4,6 +4,7 @@ import io
 import json
 import tornado.web
 import tornado.websocket
+from tornado.options import define, options
 import motor.motor_tornado
 from matplotlib.backends.backend_webagg_core import \
         FigureManagerWebAgg, \
@@ -133,5 +134,5 @@ class Application(tornado.web.Application):
                 )
         super(Application, self).__init__(handlers, **setting)
 
-        self.db = motor.MotorClient('127.0.0.1', 27017).test
+        self.db = motor.MotorClient(options.db_ip, int(options.db_port)).spectalview
         self.db.users.insert_one({'username': 'admin', 'password': 'default'})

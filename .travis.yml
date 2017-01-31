@@ -5,6 +5,7 @@ python:
     - "nightly"
 # https://docs.travis-ci.com/user/database-setup/#MongoDB
 services: mongodb
+env: DB_IP=127.0.0.1
 # there are no tests yet so only test if installation succeed
 install:
     - pip install coveralls pytest-cov
