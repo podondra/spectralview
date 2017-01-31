@@ -2,17 +2,15 @@ import os
 import uuid
 import io
 import json
-import tornado.ioloop
 import tornado.web
 import tornado.websocket
-import tornado.options
 import motor.motor_tornado
 from matplotlib.backends.backend_webagg_core import \
         FigureManagerWebAgg, \
         new_figure_manager_given_figure
 from matplotlib.figure import Figure
 from matplotlib._pylab_helpers import Gcf
-from fits import parse_fits
+from spectralview.fits import parse_fits
 from bson.objectid import ObjectId
 
 
@@ -26,6 +24,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
 
 class FigureHandler(BaseHandler):
+    """Create figure and render its page."""
     async def get(self, spectrum_id):
         spectrum = await self.db.spectra.find_one({'_id': ObjectId(spectrum_id)})
         fig = Figure()
@@ -136,10 +135,3 @@ class Application(tornado.web.Application):
 
         self.db = motor.MotorClient('172.17.0.2', 27017).test
         self.db.users.insert_one({'username': 'admin', 'password': 'default'})
-
-
-if __name__ == '__main__':
-    app = Application()
-    app.listen(8888)
-    tornado.options.parse_command_line()
-    tornado.ioloop.IOLoop.current().start()
