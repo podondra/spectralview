@@ -1,0 +1,7 @@
+language: python
+python:
+    - "3.5"
+    - "3.6"
+    - "nightly"
+# there are no tests yet so only test if installation succeed
+script: pip install -e .
