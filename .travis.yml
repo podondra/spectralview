@@ -6,5 +6,10 @@ python:
 # https://docs.travis-ci.com/user/database-setup/#MongoDB
 services: mongodb
 # there are no tests yet so only test if installation succeed
-install: pip install -e .
-script: pytest tests
+install:
+    - pip install coveralls pytest-cov
+    - pip install -e .
+# wait for mongodb
+before_script: sleep 15
+script: pytest tests --cov
+after_success: coveralls

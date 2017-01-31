@@ -32,7 +32,12 @@ setup(
         'pytest>=3.0',
         ],
     extras_require={
-        'dev': ['sphinx', 'twine', 'pytest'],
+        'dev': [
+            'sphinx',
+            'twine',
+            'pytest',
+            'pytest-cov',
+            ],
         },
     package_data={
         'spectralview': ['static/*', 'templates/*.html']

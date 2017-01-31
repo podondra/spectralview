@@ -133,5 +133,5 @@ class Application(tornado.web.Application):
                 )
         super(Application, self).__init__(handlers, **setting)
 
-        self.db = motor.MotorClient('172.17.0.2', 27017).test
+        self.db = motor.MotorClient('127.0.0.1', 27017).test
         self.db.users.insert_one({'username': 'admin', 'password': 'default'})
