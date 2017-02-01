@@ -46,11 +46,17 @@ locally run::
 
     $ pytest tests --cov
 
+It is possible to specify database location::
+
+    $ pytest --db='mongodb://localhost:27017' tests --cov
+
 Releases
 --------
 
 Spectral View should follow :pep:`440` -- Version Identification and Dependency
-Specification. To make new release the version should be changed in :code:`setup.py` and :code:`docs/conf.py`. Then push new tag to GitHub and the realese will be automatically published on PyPi::
+Specification. To make new release the version should be changed in
+:code:`setup.py` and :code:`docs/conf.py`. Then push new tag to GitHub and the
+realese will be automatically published on PyPi::
 
     $ git tag 0.0.0
     $ git push --tags

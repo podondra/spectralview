@@ -116,6 +116,8 @@ class LogoutHandler(BaseHandler):
 
 class Application(tornado.web.Application):
     def __init__(self):
+        # parse command line arguments here so when testing with pytest
+        # it is possible to provide database information
         parse_command_line()
         handlers = [
                 tornado.web.URLSpec(r'/', SpectraHandler, name='index'),
