@@ -4,12 +4,11 @@ python:
     - '3.6'
     - nightly
 services: mongodb
-env: DB_IP=127.0.0.1
 install:
     - pip install coveralls pytest-cov
     - pip install -e .
 before_script: sleep 15
-script: pytest tests --cov
+script: pytest --db='mongodb://127.0.0.1:27017' tests --cov
 after_success: coveralls
 deploy:
     provider: pypi

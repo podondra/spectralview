@@ -1,7 +1,6 @@
 import spectralview.app
 from tornado.testing import AsyncHTTPTestCase 
 
-
 class TestSpectralViewApp(AsyncHTTPTestCase):
     def get_app(self):
         return spectralview.app.Application()

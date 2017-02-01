@@ -4,7 +4,7 @@ import io
 import json
 import tornado.web
 import tornado.websocket
-from tornado.options import define, options
+from tornado.options import define, options, parse_command_line
 import motor.motor_tornado
 from matplotlib.backends.backend_webagg_core import \
         FigureManagerWebAgg, \
@@ -116,6 +116,7 @@ class LogoutHandler(BaseHandler):
 
 class Application(tornado.web.Application):
     def __init__(self):
+        parse_command_line()
         handlers = [
                 tornado.web.URLSpec(r'/', SpectraHandler, name='index'),
                 tornado.web.URLSpec(r'/spectra/([0-9a-z]+)', FigureHandler, name='spectrum'),
@@ -134,5 +135,5 @@ class Application(tornado.web.Application):
                 )
         super(Application, self).__init__(handlers, **setting)
 
-        self.db = motor.MotorClient(options.db_ip, int(options.db_port)).spectalview
+        self.db = motor.MotorClient(options.db).spectalview
         self.db.users.insert_one({'username': 'admin', 'password': 'default'})
