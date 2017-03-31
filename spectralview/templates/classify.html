@@ -5,6 +5,7 @@
 {% end %}
 
 {% block body %}
+<h2>{{ name }}</h2>
 <svg width="500" height="300"></svg>
 <script type="text/javascript">
 var data = {% raw spectrum %}
@@ -49,4 +50,12 @@ g.append("line")
     .attr("stroke-dasharray", "5, 5")
     .attr("stroke", "black");
 </script>
+
+<form action="{{ reverse_url('classify') }}" method="post">
+    {% module xsrf_form_html() %}
+    <input type="hidden" name="ident" value="{{ ident }}">
+    <button name="label" value="absorption" autofocus>absorption</button>
+    <button name="label" value="emission">emission</button>
+    <button name="label" value="unknown">unknown</button>
+</form>
 {% end %}

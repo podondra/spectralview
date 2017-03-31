@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
     <head>
+        <meta charset="utf-8">
         <title>Spectral View</title>
         <link rel="shortcut icon" type="image/x-icon" href="{{ static_url('favicon.ico') }}">
         {% block head %}{% end %}
@@ -14,6 +15,11 @@
                 {% else %}
                 <a href="{{ reverse_url('logout') }}">logout</a>
                 {% end %}
+                <a href="{{ reverse_url('spectra', 'all',) }}">all</a>
+                <a href="{{ reverse_url('spectra', 'emission',) }}">emission</a>
+                <a href="{{ reverse_url('spectra', 'absorption') }}">absorption</a>
+                <a href="{{ reverse_url('spectra', 'unknown') }}">unknown</a>
+                <a href="{{ reverse_url('classification') }}">classification</a>
             </nav>
         </header>
         <section>

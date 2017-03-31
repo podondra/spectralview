@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block body %}
+<form action="{{ reverse_url('classification') }}" method=post>
+    {% module xsrf_form_html() %}
+    <dl>
+        <dt>service url:</dt>
+        <dd>
+            <input type="text" name="service_url" size="50"
+                value="http://voarchive.asu.cas.cz/ccd700/q/ssa/ssap.xml">
+        </dd>
+        <dt>band:</dt>
+        <dd><input type="text" name="band" value="6.562e-07"></dd>
+        <dd><input type="submit" value="Update"></dd>
+    </dl>
+</form>
+<h2><a href="{{ reverse_url('classify') }}">Let's Classify</a></h2>
+<h2><a href="{{ reverse_url('export') }}">Export Labels CSV</a></h2>
+<h2>Unclassified Spectra: {{ len(spectra) }}</h2>
+<ol>
+    {% for spectrum in spectra %}
+    <li>
+        <a href="{{ reverse_url('spectrum', spectrum['_id']) }}">
+            {{ spectrum['ident'] }}
+        </a>
+    </li>
+    {% end %}
+</ol>
+{% end %}

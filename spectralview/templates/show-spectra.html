@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block body %}
+<h2>{{ heading }}: {{ len(spectra) }}</h2>
+<ol>
+    {% for spectrum in sorted(spectra, key=lambda x: x['name']) %}
+    <li>
+        <a href='{{ reverse_url('spectrum', spectrum['_id']) }}'>
+            {{ spectrum['name'] }}
+        </a>
+    </li>
+    {% end %}
+</ol>
+{% end %}
