@@ -123,13 +123,24 @@ class SpectraHandler(BaseHandler):
 class IndexHandler(BaseHandler):
     async def get(self):
         coll = self.db.spectra
-        counts = {}
-        counts['unclassified'] = await coll.find({'label': {'$eq': -1}}).count()
-        counts['emission'] = await coll.find({'label': {'$eq': 0}}).count()
-        counts['absorption'] = await coll.find({'label': {'$eq': 1}}).count()
-        counts['unknown'] = await coll.find({'label': {'$eq': 2}}).count()
-        print(counts)
-        self.render('index.html')
+        counts = []
+        counts.append({
+            'name': 'unclassified',
+            'value': await coll.find({'label': {'$eq': -1}}).count()
+        })
+        counts.append({
+            'name': 'emission',
+            'value': await coll.find({'label': {'$eq': 0}}).count()
+        })
+        counts.append({
+            'name': 'absorption',
+            'value': await coll.find({'label': {'$eq': 1}}).count()
+        })
+        counts.append({
+            'name': 'unknown',
+            'value': await coll.find({'label': {'$eq': 2}}).count()
+        })
+        self.render('index.html', counts=counts)
 
 
 class SpectrumHandler(BaseHandler):
