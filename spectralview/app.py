@@ -36,6 +36,7 @@ class ExportHandler(BaseHandler):
 
 class ClassifyHandler(BaseHandler):
     async def get(self):
+        # TODO make function which download if not exist
         spectrum = await self.db.spectra.find_one({'label': -1})
         try:
             wave, flux = spectrum['wave'], spectrum['flux']
@@ -49,12 +50,7 @@ class ClassifyHandler(BaseHandler):
             await self.db.spectra.update_one(ident, {'$set': fits_dict})
             spectrum = await self.db.spectra.find_one(ident)
             wave, flux = spectrum['wave'], spectrum['flux']
-        data = [
-                {'wave': w, 'flux': f}
-                for w, f in zip(wave, flux)
-                if 6500 <= w <= 6600
-                ]
-        self.render('classify.html', spectrum=data, ident=spectrum['_id'], name=spectrum['name'])
+        self.render('classify.html', spectrum=spectrum)
 
     async def post(self):
         label = self.get_argument('label')
@@ -148,6 +144,25 @@ class SpectrumHandler(BaseHandler):
         """Display a spectrum."""
         ident = {'_id': ObjectId(spectrum_id)}
         spectrum = await self.db.spectra.find_one(ident)
+        self.render('spectrum.html', spectrum=spectrum)
+
+    async def post(self, spectrum_id):
+        label = self.get_argument('label')
+        label_dict = {'label': 2}   # default is unknown
+        if label == 'emission':
+            label_dict['label'] = 0
+        elif label == 'absorption':
+            label_dict['label'] = 1
+
+        ident_dict = {'_id': ObjectId(spectrum_id)}
+        await self.db.spectra.update_one(ident_dict, {'$set': label_dict})
+        self.redirect(self.reverse_url('spectrum', spectrum_id))
+
+
+class SpectrumAPIHandler(BaseHandler):
+    async def get(self, spectrum_id):
+        ident = {'_id': ObjectId(spectrum_id)}
+        spectrum = await self.db.spectra.find_one(ident)
         try:
             wave, flux = spectrum['wave'], spectrum['flux']
         except KeyError:
@@ -155,10 +170,10 @@ class SpectrumHandler(BaseHandler):
             result = await self.db.spectra.update_one(ident, {'$set': fits_dict})
             spectrum = await self.db.spectra.find_one(ident)
             wave, flux = spectrum['wave'], spectrum['flux']
-        data = [
+        data = {'data': [
             {'wave': w, 'flux': f} for w, f in zip(wave, flux) if 6500 <= w <= 6600
-        ]
-        self.render('figure.html', spectrum=data)
+        ]}
+        self.write(data)
 
 
 class LoginHandler(BaseHandler):
@@ -198,6 +213,8 @@ class Application(tornado.web.Application):
             URLSpec(r'/classification/export', ExportHandler, name='export'),
             URLSpec(r'/classification', ClassificationHandler, name='classification'),
             URLSpec(r'/classification/classify', ClassifyHandler, name='classify'),
+            # API
+            URLSpec(r'/api/spectra/([0-9a-z]+)', SpectrumAPIHandler, name='api_spectrum'),
         ]
         setting = dict(
             template_path=os.path.join(os.path.dirname(__file__), 'templates'),
