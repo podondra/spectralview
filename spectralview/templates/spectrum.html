@@ -1,24 +1,16 @@
 {% extends base.html %}
 
 {% block body %}
-<h2>{{ spectrum['name'] }}</h2>
+<h2>{{spectrum['name']}}</h2>
 
-<p>label: {{ inv_classes[spectrum['label']] }}</p>
+<p>label: {{inv_classes[spectrum['label']]}}</p>
 
-<svg id="spectrum"></svg>
+{% include vizualization.html %}
 
-<form action="{{ reverse_url('spectrum', spectrum['_id']) }}" method="post">
+<form action="{{reverse_url('spectrum', spectrum['_id'])}}" method="post">
     {% module xsrf_form_html() %}
-    {% for c in classes %}
-        <button name="label" value="{{ c }}" autofocus>{{ c }}</button>
+    {% for category in sorted(classes) %}
+        <button name="label" value="{{category}}" autofocus>{{category}}</button>
     {% end %}
 </form>
-
-<script type="text/javascript">
-d3.json("{{ reverse_url('api_spectrum', spectrum['_id']) }}", function(data) {
-    d3.select("#spectrum")
-        .datum(data)
-        .call(lineChart().height(400).width(600));
-});
-</script>
 {% end %}

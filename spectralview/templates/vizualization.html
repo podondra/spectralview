@@ -1,0 +1,26 @@
+<svg id="spectrum"></svg>
+<svg id="halpha"></svg>
+<svg id="convolved"></svg>
+ 
+<script type="text/javascript">
+d3.json("{{reverse_url('api_spectrum', spectrum['_id'])}}",
+    function(data) {
+        d3.select("#spectrum")
+            .datum(data)
+            .call(lineChart().height(300).width(400));
+});
+
+d3.json("{{reverse_url('api_halpha', spectrum['_id'], 'halpha')}}",
+    function(data) {
+        d3.select("#halpha")
+            .datum(data)
+            .call(lineChart().height(300).width(400));
+});
+
+d3.json("{{reverse_url('api_halpha', spectrum['_id'], 'halpha')}}",
+    function(data) {
+        d3.select("#convolved")
+            .datum(data)
+            .call(lineChart().height(300).width(400));
+});
+</script>

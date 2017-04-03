@@ -4,6 +4,7 @@ import numpy as np
 from tornado.httputil import url_concat
 import tornado.httpclient as httpclient
 import spectralview.utils as utils
+from bson.objectid import ObjectId
 
 
 def parse_fits(filename):
@@ -40,3 +41,16 @@ def download_fits(ident):
     if response:
         return parse_fits(io.BytesIO(response.body))
     return None
+
+async def query_flux_wave(collection, spectrum_id):
+    ident = {'_id': ObjectId(spectrum_id)}
+    spectrum = await collection.find_one(ident)
+    try:
+        # try if downoloaded already
+        spectrum['name']
+    except KeyError:
+        fits_dict = download_fits(spectrum['ident'])
+        result = await collection.update_one(ident, {'$set': fits_dict})
+        spectrum = await collection.find_one(ident)
+
+    return spectrum

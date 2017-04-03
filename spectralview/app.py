@@ -10,7 +10,7 @@ import motor.motor_tornado
 from matplotlib.backends.backend_webagg_core import \
         FigureManagerWebAgg, \
         new_figure_manager_given_figure
-from spectralview.fits import parse_fits, download_fits
+from spectralview.fits import parse_fits, download_fits, query_flux_wave
 import spectralview.utils as utils
 import spectralview.ssap as ssap
 from bson.objectid import ObjectId
@@ -28,6 +28,7 @@ CLASSES = {
 INV_CLASSES = {
     v: k for k, v in CLASSES.items()
 }
+INV_CLASSES[-1] = 'unclassified'
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -145,34 +146,33 @@ class IndexHandler(BaseHandler):
 class SpectrumHandler(BaseHandler):
     async def get(self, spectrum_id):
         """Display a spectrum."""
-        ident = {'_id': ObjectId(spectrum_id)}
-        spectrum = await self.db.spectra.find_one(ident)
+        collection = self.db.spectra
+        spectrum = await query_flux_wave(collection, spectrum_id)
         self.my_render('spectrum.html', inv_classes=INV_CLASSES, spectrum=spectrum)
 
     async def post(self, spectrum_id):
         label = self.get_argument('label')
         label_dict = {'label': CLASSES[label]}
         ident_dict = {'_id': ObjectId(spectrum_id)}
-
         await self.db.spectra.update_one(ident_dict, {'$set': label_dict})
-
         self.redirect(self.reverse_url('spectrum', spectrum_id))
 
 
 class SpectrumAPIHandler(BaseHandler):
-    async def get(self, spectrum_id):
-        ident = {'_id': ObjectId(spectrum_id)}
-        spectrum = await self.db.spectra.find_one(ident)
-        try:
-            wave, flux = spectrum['wave'], spectrum['flux']
-        except KeyError:
-            fits_dict = download_fits(spectrum['ident'])
-            result = await self.db.spectra.update_one(ident, {'$set': fits_dict})
-            spectrum = await self.db.spectra.find_one(ident)
-            wave, flux = spectrum['wave'], spectrum['flux']
-        data = {'data': [
-            {'wave': w, 'flux': f} for w, f in zip(wave, flux) if 6500 <= w <= 6600
-        ]}
+    async def get(self, spectrum_id, interval=None):
+        collection = self.db.spectra
+        spectrum = await query_flux_wave(collection, spectrum_id)
+        if interval == None:
+            data = {'data': [
+                {'wave': w, 'flux': f}
+                for w, f in zip(spectrum['wave'], spectrum['flux'])
+            ]}
+        elif interval == 'halpha':
+            data = {'data': [
+                {'wave': w, 'flux': f}
+                for w, f in zip(spectrum['wave'], spectrum['flux'])
+                if 6500 <= w <= 6600
+            ]}
         # response with Python's dict aka JSON
         self.write(data)
 
@@ -216,6 +216,8 @@ class Application(tornado.web.Application):
             URLSpec(r'/classification/classify', ClassifyHandler, name='classify'),
             # API
             URLSpec(r'/api/spectra/([0-9a-z]+)', SpectrumAPIHandler, name='api_spectrum'),
+            URLSpec(r'/api/spectra/([0-9a-z]+)/(halpha)', SpectrumAPIHandler, name='api_halpha'),
+            URLSpec(r'/api/spectra/([0-9a-z]+)/(convolved)', SpectrumAPIHandler, name='api_convolved'),
         ]
         setting = dict(
             template_path=os.path.join(os.path.dirname(__file__), 'templates'),

@@ -1,19 +1,20 @@
 {% extends "base.html" %}
 
 {% block body %}
-<h2>{{ heading }}: {{ len(spectra) }}</h2>
+<h2>{{heading}}: {{len(spectra)}}</h2>
 <ol>
     {% for spectrum in sorted(spectra, key=lambda x: x['name']) %}
     <li>
-        <a href='{{ reverse_url('spectrum', spectrum['_id']) }}'>
-            {{ spectrum['name'] }}<br>
+        <a href='{{reverse_url('spectrum', spectrum['_id'])}}'>
+            {{spectrum['name']}}<br>
 
-            <svg id="spectrum-{{ spectrum['_id'] }}"></svg>
+            <svg id="spectrum-{{spectrum['_id']}}"></svg>
             <script type="text/javascript">
-d3.json("{{ reverse_url('api_spectrum', spectrum['_id']) }}", function(data) {
-    d3.select("#spectrum-{{ spectrum['_id'] }}")
-        .datum(data)
-        .call(lineChart());
+d3.json("{{reverse_url('api_halpha', spectrum['_id'], 'halpha')}}",
+    function(data) {
+        d3.select("#spectrum-{{spectrum['_id']}}")
+            .datum(data)
+            .call(lineChart());
 });
             </script>
         </a>

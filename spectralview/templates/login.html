@@ -2,9 +2,9 @@
 {% block body %}
     <h2>login</h2>
     {% if error %}
-    <p><strong>error:</strong> {{ error }}
+    <p><strong>error:</strong> {{error}}
     {% end %}
-    <form action="{{ reverse_url('login') }}" method=post>
+    <form action="{{reverse_url('login')}}" method=post>
         {% module xsrf_form_html() %}
         <dl>
             <dt>username:</dt>
