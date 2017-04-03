@@ -14,14 +14,14 @@
             <h1><a href="{{ reverse_url('index') }}">Spectral View</a></h1>
             <nav>
                 {% if not current_user %}
-                <a href="{{ reverse_url('login') }}">login</a>
+                    <a href="{{ reverse_url('login') }}">login</a>
                 {% else %}
-                <a href="{{ reverse_url('logout') }}">logout</a>
+                    <a href="{{ reverse_url('logout') }}">logout</a>
                 {% end %}
                 <a href="{{ reverse_url('spectra', 'all',) }}">all</a>
-                <a href="{{ reverse_url('spectra', 'emission',) }}">emission</a>
-                <a href="{{ reverse_url('spectra', 'absorption') }}">absorption</a>
-                <a href="{{ reverse_url('spectra', 'unknown') }}">unknown</a>
+                {% for c in classes %}
+                    <a href="{{ reverse_url('spectra', c) }}">{{ c }}</a>
+                {% end %}
                 <a href="{{ reverse_url('classification') }}">classification</a>
             </nav>
         </header>

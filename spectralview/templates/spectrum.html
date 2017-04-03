@@ -3,15 +3,15 @@
 {% block body %}
 <h2>{{ spectrum['name'] }}</h2>
 
-<p>label: {{ spectrum['label'] }}</p>
+<p>label: {{ inv_classes[spectrum['label']] }}</p>
 
 <svg id="spectrum"></svg>
 
 <form action="{{ reverse_url('spectrum', spectrum['_id']) }}" method="post">
     {% module xsrf_form_html() %}
-    <button name="label" value="absorption" autofocus>absorption</button>
-    <button name="label" value="emission">emission</button>
-    <button name="label" value="unknown">unknown</button>
+    {% for c in classes %}
+        <button name="label" value="{{ c }}" autofocus>{{ c }}</button>
+    {% end %}
 </form>
 
 <script type="text/javascript">

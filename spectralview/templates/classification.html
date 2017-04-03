@@ -14,8 +14,16 @@
         <dd><input type="submit" value="Update"></dd>
     </dl>
 </form>
+
 <h2><a href="{{ reverse_url('classify') }}">Let's Classify</a></h2>
+
 <h2><a href="{{ reverse_url('export') }}">Export Labels CSV</a></h2>
+<ul>
+    {% for c, num in sorted(classes.items(), key=lambda x: x[1]) %}
+        <li>{{ c }}: {{ num }}</li>
+    {% end %}
+</ul>
+
 <h2>Unclassified Spectra: {{ len(spectra) }}</h2>
 <ol>
     {% for spectrum in spectra %}

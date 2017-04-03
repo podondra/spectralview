@@ -1,9 +1,5 @@
 {% extends base.html %}
 
-{% block head %}
-<script src="http://d3js.org/d3.v4.min.js"></script>
-{% end %}
-
 {% block body %}
 <h2>{{ spectrum['name'] }}</h2>
 
@@ -12,9 +8,9 @@
 <form action="{{ reverse_url('classify') }}" method="post">
     {% module xsrf_form_html() %}
     <input type="hidden" name="ident" value="{{ spectrum['_id'] }}">
-    <button name="label" value="absorption" autofocus>absorption</button>
-    <button name="label" value="emission">emission</button>
-    <button name="label" value="unknown">unknown</button>
+    {% for c in classes %}
+        <button name="label" value="{{ c }}" autofocus>{{ c }}</button>
+    {% end %}
 </form>
 
 <script type="text/javascript">

@@ -16,6 +16,20 @@ import spectralview.ssap as ssap
 from bson.objectid import ObjectId
 
 
+# global dict with classes
+# change the numbers with care
+# do not include spaces in names
+CLASSES = {
+    'emission':      0,
+    'absorption':    1,
+    'unknown':       2, 
+    'double-peak':   3,
+}
+INV_CLASSES = {
+    v: k for k, v in CLASSES.items()
+}
+
+
 class BaseHandler(tornado.web.RequestHandler):
     @property
     def db(self):
@@ -23,6 +37,9 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def get_current_user(self):
         return self.get_secure_cookie('user')
+
+    def my_render(self, template_name, **kwarg):
+        self.render(template_name, classes=CLASSES, **kwarg)
 
 
 class ExportHandler(BaseHandler):
@@ -50,16 +67,11 @@ class ClassifyHandler(BaseHandler):
             await self.db.spectra.update_one(ident, {'$set': fits_dict})
             spectrum = await self.db.spectra.find_one(ident)
             wave, flux = spectrum['wave'], spectrum['flux']
-        self.render('classify.html', spectrum=spectrum)
+        self.my_render('classify.html', spectrum=spectrum)
 
     async def post(self):
         label = self.get_argument('label')
-        label_dict = {'label': 2}   # default is unknown
-        if label == 'emission':
-            label_dict['label'] = 0
-        elif label == 'absorption':
-            label_dict['label'] = 1
-
+        label_dict = {'label': CLASSES[label]}
         ident_dict = {'_id': ObjectId(self.get_argument('ident'))}
         await self.db.spectra.update_one(ident_dict, {'$set': label_dict})
         self.redirect(self.reverse_url('classify'))
@@ -70,7 +82,7 @@ class ClassificationHandler(BaseHandler):
         spectra = []
         async for spectrum in self.db.spectra.find({'label': -1}):
             spectra.append(spectrum)
-        self.render('classification.html', spectra=spectra)
+        self.my_render('classification.html', spectra=spectra)
 
     async def post(self):
         # parse POST request
@@ -90,8 +102,8 @@ class ClassificationHandler(BaseHandler):
         if ids:
             result = await self.db.spectra.insert_many((
                 {'ident': ident, 'label': -1} for ident in ids
-                ))
-            self.redirect(self.reverse_url('classification'))
+            ))
+        self.redirect(self.reverse_url('classification'))
 
 
 class SpectraHandler(BaseHandler):
@@ -99,18 +111,14 @@ class SpectraHandler(BaseHandler):
         """Display spectra."""
         if kind == 'all':
             query = {'label': {'$gt': -1}}
-        elif kind == 'emission':
-            query = {'label': {'$eq': 0}}
-        elif kind == 'absorption':
-            query = {'label': {'$eq': 1}}
-        elif kind == 'unknown':
-            query = {'label': {'$eq': 2}}
+        else:
+            query = {'label': {'$eq': CLASSES[kind]}}
 
         spectra = []
         async for spectrum in self.db.spectra.find(query):
             spectra.append(spectrum)
 
-        self.render('show-spectra.html',
+        self.my_render('show-spectra.html',
             heading=kind.capitalize() + ' Spectra',
             spectra=spectra
         )
@@ -118,25 +126,20 @@ class SpectraHandler(BaseHandler):
 
 class IndexHandler(BaseHandler):
     async def get(self):
-        coll = self.db.spectra
-        counts = []
-        counts.append({
+        counts = [{
             'name': 'unclassified',
-            'value': await coll.find({'label': {'$eq': -1}}).count()
-        })
-        counts.append({
-            'name': 'emission',
-            'value': await coll.find({'label': {'$eq': 0}}).count()
-        })
-        counts.append({
-            'name': 'absorption',
-            'value': await coll.find({'label': {'$eq': 1}}).count()
-        })
-        counts.append({
-            'name': 'unknown',
-            'value': await coll.find({'label': {'$eq': 2}}).count()
-        })
-        self.render('index.html', counts=counts)
+            'value': await self.db.spectra.find({'label': {'$eq': -1}}).count()
+        }]
+        # sort according to number assigned to a label
+        for name, value in sorted(CLASSES.items(), key=lambda x: x[1]):
+            counts.append({
+                'name': name,
+                'value': await self.db.spectra.find(
+                    {'label': {'$eq': value}}
+                ).count()
+            })
+
+        self.my_render('index.html', counts=counts)
 
 
 class SpectrumHandler(BaseHandler):
@@ -144,18 +147,15 @@ class SpectrumHandler(BaseHandler):
         """Display a spectrum."""
         ident = {'_id': ObjectId(spectrum_id)}
         spectrum = await self.db.spectra.find_one(ident)
-        self.render('spectrum.html', spectrum=spectrum)
+        self.my_render('spectrum.html', inv_classes=INV_CLASSES, spectrum=spectrum)
 
     async def post(self, spectrum_id):
         label = self.get_argument('label')
-        label_dict = {'label': 2}   # default is unknown
-        if label == 'emission':
-            label_dict['label'] = 0
-        elif label == 'absorption':
-            label_dict['label'] = 1
-
+        label_dict = {'label': CLASSES[label]}
         ident_dict = {'_id': ObjectId(spectrum_id)}
+
         await self.db.spectra.update_one(ident_dict, {'$set': label_dict})
+
         self.redirect(self.reverse_url('spectrum', spectrum_id))
 
 
@@ -173,24 +173,25 @@ class SpectrumAPIHandler(BaseHandler):
         data = {'data': [
             {'wave': w, 'flux': f} for w, f in zip(wave, flux) if 6500 <= w <= 6600
         ]}
+        # response with Python's dict aka JSON
         self.write(data)
 
 
 class LoginHandler(BaseHandler):
     def get(self):
-        self.render('login.html', error=None)
+        self.my_render('login.html', error=None)
 
     async def post(self):
         username = self.get_argument('username')
         user = await self.db.users.find_one({'username': username})
         if not user:
-            self.render('login.html', error='user not found')
+            self.my_render('login.html', error='user not found')
             return
         if self.get_argument('password') == user['password']:
             self.set_secure_cookie('user', username)
             self.redirect(self.reverse_url('index'))
         else:
-            self.render('login.html', error='incorrect password')
+            self.my_render('login.html', error='incorrect password')
 
 
 class LogoutHandler(BaseHandler):
@@ -206,7 +207,7 @@ class Application(tornado.web.Application):
         parse_command_line()
         handlers = [
             URLSpec(r'/', IndexHandler, name='index'),
-            URLSpec(r'/spectra/(all|absorption|emission|unknown)', SpectraHandler, name='spectra'),
+            URLSpec(r'/spectra/(all|' + '|'.join(CLASSES) + ')', SpectraHandler, name='spectra'),
             URLSpec(r'/spectra/([0-9a-z]+)', SpectrumHandler, name='spectrum'),
             URLSpec(r'/login', LoginHandler, name='login'),
             URLSpec(r'/logout', LogoutHandler, name='logout'),
