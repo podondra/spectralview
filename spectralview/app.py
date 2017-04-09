@@ -14,6 +14,7 @@ from spectralview.fits import parse_fits, download_fits, query_flux_wave
 import spectralview.utils as utils
 import spectralview.ssap as ssap
 from bson.objectid import ObjectId
+from astropy.convolution import convolve, Gaussian1DKernel
 
 
 # global dict with classes
@@ -47,6 +48,7 @@ class ExportHandler(BaseHandler):
     async def get(self):
         self.set_header('Content-Type', 'text/csv')
         self.set_header('Content-Disposition', 'attachment; filename=spectra.csv')
+        self.write('id,label\n')
         async for spectrum in self.db.spectra.find({'label': {'$gt':-1}}):
             self.write(spectrum['ident'] + ',' + str(spectrum['label']) + '\n')
         self.finish()
@@ -56,19 +58,18 @@ class ClassifyHandler(BaseHandler):
     async def get(self):
         # TODO make function which download if not exist
         spectrum = await self.db.spectra.find_one({'label': -1})
-        try:
-            wave, flux = spectrum['wave'], spectrum['flux']
-        except KeyError:
-            fits_dict = download_fits(spectrum['ident'])
-            ident = {'_id': ObjectId(spectrum['_id'])}
-            if fits_dict == None:
-                result = await self.db.spectra.delete_many(ident)
-                self.redirect(self.reverse_url('classify'))
-                return
+        if spectrum == None:
+            self.redirect(self.reverse_url('classification'))
+        fits_dict = download_fits(spectrum['ident'])
+        ident = {'_id': ObjectId(spectrum['_id'])}
+        if fits_dict == None:
+            result = await self.db.spectra.delete_many(ident)
+            self.redirect(self.reverse_url('classify'))
+        else:
             await self.db.spectra.update_one(ident, {'$set': fits_dict})
             spectrum = await self.db.spectra.find_one(ident)
             wave, flux = spectrum['wave'], spectrum['flux']
-        self.my_render('classify.html', spectrum=spectrum)
+            self.my_render('classify.html', spectrum=spectrum)
 
     async def post(self):
         label = self.get_argument('label')
@@ -121,7 +122,25 @@ class SpectraHandler(BaseHandler):
 
         self.my_render('show-spectra.html',
             heading=kind.capitalize() + ' Spectra',
-            spectra=spectra
+            spectra=sorted(spectra, key=lambda x: x['name'])
+        )
+
+
+class IntervalHandler(BaseHandler):
+    async def get(self, kind, start, end):
+        """Display spectra."""
+        if kind == 'all':
+            query = {'label': {'$gt': -1}}
+        else:
+            query = {'label': {'$eq': CLASSES[kind]}}
+
+        spectra = []
+        async for spectrum in self.db.spectra.find(query):
+            spectra.append(spectrum)
+
+        self.my_render('show-spectra.html',
+            heading=kind.capitalize() + ' Spectra',
+            spectra=sorted(spectra, key=lambda x: x['name'])[int(start):int(end)]
         )
 
 
@@ -159,10 +178,11 @@ class SpectrumHandler(BaseHandler):
 
 
 class SpectrumAPIHandler(BaseHandler):
-    async def get(self, spectrum_id, interval=None):
+    async def get(self, spectrum_id, interval):
         collection = self.db.spectra
         spectrum = await query_flux_wave(collection, spectrum_id)
-        if interval == None:
+        data = {}
+        if interval == 'all':
             data = {'data': [
                 {'wave': w, 'flux': f}
                 for w, f in zip(spectrum['wave'], spectrum['flux'])
@@ -171,6 +191,14 @@ class SpectrumAPIHandler(BaseHandler):
             data = {'data': [
                 {'wave': w, 'flux': f}
                 for w, f in zip(spectrum['wave'], spectrum['flux'])
+                if 6500 <= w <= 6600
+            ]}
+        elif interval == 'convolved':
+            gauss = Gaussian1DKernel(stddev=7)
+            convolved = convolve(spectrum['flux'], gauss, boundary='extend')
+            data = {'data': [
+                {'wave': w, 'flux': f}
+                for w, f in zip(spectrum['wave'], convolved)
                 if 6500 <= w <= 6600
             ]}
         # response with Python's dict aka JSON
@@ -208,6 +236,7 @@ class Application(tornado.web.Application):
         handlers = [
             URLSpec(r'/', IndexHandler, name='index'),
             URLSpec(r'/spectra/(all|' + '|'.join(CLASSES) + ')', SpectraHandler, name='spectra'),
+            URLSpec(r'/spectra/(all|' + '|'.join(CLASSES) + ')/([0-9]+)-([0-9]+)', IntervalHandler, name='interval'),
             URLSpec(r'/spectra/([0-9a-z]+)', SpectrumHandler, name='spectrum'),
             URLSpec(r'/login', LoginHandler, name='login'),
             URLSpec(r'/logout', LogoutHandler, name='logout'),
@@ -215,9 +244,7 @@ class Application(tornado.web.Application):
             URLSpec(r'/classification', ClassificationHandler, name='classification'),
             URLSpec(r'/classification/classify', ClassifyHandler, name='classify'),
             # API
-            URLSpec(r'/api/spectra/([0-9a-z]+)', SpectrumAPIHandler, name='api_spectrum'),
-            URLSpec(r'/api/spectra/([0-9a-z]+)/(halpha)', SpectrumAPIHandler, name='api_halpha'),
-            URLSpec(r'/api/spectra/([0-9a-z]+)/(convolved)', SpectrumAPIHandler, name='api_convolved'),
+            URLSpec(r'/api/spectra/([0-9a-z]+)/(all|halpha|convolved)', SpectrumAPIHandler, name='api_spectrum'),
         ]
         setting = dict(
             template_path=os.path.join(os.path.dirname(__file__), 'templates'),

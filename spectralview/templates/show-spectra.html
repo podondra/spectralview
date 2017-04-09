@@ -3,14 +3,14 @@
 {% block body %}
 <h2>{{heading}}: {{len(spectra)}}</h2>
 <ol>
-    {% for spectrum in sorted(spectra, key=lambda x: x['name']) %}
+    {% for spectrum in spectra %}
     <li>
         <a href='{{reverse_url('spectrum', spectrum['_id'])}}'>
             {{spectrum['name']}}<br>
 
             <svg id="spectrum-{{spectrum['_id']}}"></svg>
             <script type="text/javascript">
-d3.json("{{reverse_url('api_halpha', spectrum['_id'], 'halpha')}}",
+d3.json("{{reverse_url('api_spectrum', spectrum['_id'], 'convolved')}}",
     function(data) {
         d3.select("#spectrum-{{spectrum['_id']}}")
             .datum(data)

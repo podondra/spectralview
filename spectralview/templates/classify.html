@@ -1,5 +1,14 @@
 {% extends base.html %}
 
+{% block head %}
+<style>
+button:focus { 
+    background-color: black;
+    color: white;
+}
+</style>
+{% end %}
+
 {% block body %}
 <h2>{{spectrum['name']}}</h2>
 

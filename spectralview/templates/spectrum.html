@@ -3,7 +3,12 @@
 {% block body %}
 <h2>{{spectrum['name']}}</h2>
 
-<p>label: {{inv_classes[spectrum['label']]}}</p>
+<ul>
+    <li><b>label:</b> {{inv_classes[spectrum['label']]}}</li>
+    <li><b>public-id:</b> {{spectrum['ident']}}</li>
+    <li><b>wavelength min:</b> {{spectrum['wave'][0]}}</li>
+    <li><b>wavelength max:</b> {{spectrum['wave'][-1]}}</li>
+</ul>
 
 {% include vizualization.html %}
 
